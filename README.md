@@ -20,8 +20,8 @@
 [![DevTools](https://img.shields.io/badge/Category-DevTools-2ea44f.svg)]()
 
 <p align="center">
-  <a href="https://github.com/Invictus360/skills.ai/edit/main/README.md#-how-to-use-the-library">Usage Guide</a> •
-  <a href="https://github.com/Invictus360/skills.ai/edit/main/README.md#-repository-architecture">Architecture</a> •
+  <a href="https://github.com/Invictus360/skills.ai/main/README.md#-how-to-use-the-library">Usage Guide</a> •
+  <a href="https://github.com/Invictus360/skills.ai/main/README.md#-repository-architecture">Architecture</a> •
   <a href="./CONTRIBUTING.md">Contributing</a>
 </p>
 
