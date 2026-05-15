@@ -2,7 +2,7 @@
 name: Skill Correction/Update
 about: Fix a typo, add a missing rule, or update an anti-pattern in an existing skill.
 title: "[UPDATE]: <skill-name>"
-labels: ''
+labels: update skill
 assignees: ''
 
 ---
