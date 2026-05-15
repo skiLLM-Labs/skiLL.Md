@@ -1,6 +1,6 @@
 <div align="center">
 
-<img height="125" alt="skills.ai" src="https://github.com/user-attachments/assets/c4da51aa-e402-40c0-8870-97a9bdeed794" />
+<img height="125" alt="Group 6 (1)" src="https://github.com/user-attachments/assets/f5ce7dd3-1433-44b2-8305-c4c4ec6f2fb8" />
 
 **skills.ai is a structured, open-source collection of reusable, self-contained Markdown modules designed to teach AI coding assistants and human developers how to perform specific software engineering tasks.**
 
@@ -9,7 +9,7 @@
 [![Markdown Standard](https://img.shields.io/badge/Markdown-Strict-black.svg)]()
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)]()
 <br />
-[![Total Skills](https://img.shields.io/badge/Total_Skills-10-orange.svg)]()
+[![Total Skills](https://img.shields.io/badge/Total_Skills-14-orange.svg)]()
 [![Schema](https://img.shields.io/badge/Schema-Valid-blueviolet.svg)]()
 [![Registry](https://img.shields.io/badge/Registry-Synchronized-success.svg)]()
 [![Standard](https://img.shields.io/badge/Standard-SOP--Ready-yellow.svg)]()
