@@ -1,0 +1,64 @@
+{
+  "skills": [
+    {
+      "name": "react-component-design",
+      "category": "frontend",
+      "path": "skills/frontend/react-component-design",
+      "tags": ["react", "ui", "components"]
+    },
+    {
+      "name": "state-management-patterns",
+      "category": "frontend",
+      "path": "skills/frontend/state-management-patterns",
+      "tags": ["react", "state", "architecture"]
+    },
+    {
+      "name": "api-design-rest",
+      "category": "backend",
+      "path": "skills/backend/api-design-rest",
+      "tags": ["api", "rest", "http"]
+    },
+    {
+      "name": "error-handling-architecture",
+      "category": "backend",
+      "path": "skills/backend/error-handling-architecture",
+      "tags": ["errors", "resilience", "backend"]
+    },
+    {
+      "name": "git-workflow-branching",
+      "category": "dev-tools",
+      "path": "skills/dev-tools/git-workflow-branching",
+      "tags": ["git", "vcs", "collaboration"]
+    },
+    {
+      "name": "debugging-strategies",
+      "category": "dev-tools",
+      "path": "skills/dev-tools/debugging-strategies",
+      "tags": ["debugging", "troubleshooting"]
+    },
+    {
+      "name": "accessibility-ui-design",
+      "category": "ui-ux",
+      "path": "skills/ui-ux/accessibility-ui-design",
+      "tags": ["a11y", "ui", "inclusive-design"]
+    },
+    {
+      "name": "event-driven-design",
+      "category": "architecture",
+      "path": "skills/architecture/event-driven-design",
+      "tags": ["architecture", "events", "async"]
+    },
+    {
+      "name": "caching-strategies",
+      "category": "architecture",
+      "path": "skills/architecture/caching-strategies",
+      "tags": ["performance", "caching", "scalability"]
+    },
+    {
+      "name": "code-review-guidelines",
+      "category": "code-quality",
+      "path": "skills/code-quality/code-review-guidelines",
+      "tags": ["review", "quality", "team"]
+    }
+  ]
+}
