@@ -30,7 +30,7 @@ Instead of telling the AI *everything* about your codebase at once, you dynamica
 
 - **No generic advice** ("Write clean code").
 - **No training datasets** (Only rules, constraints, and actionable workflows).
-- **No model-specific logic** (Works across GPT-5.5, Claude 4.7 Opus, Gemini 3.1 Pro, etc.).
+- **No model or IDE specific logic** (Works across ChatGPT, Claude, Gemini, Github Copilot, Cursor, VSCode, Claude Code, Codex etc.).
 
 ## What is a `SKILL.md`?
 
