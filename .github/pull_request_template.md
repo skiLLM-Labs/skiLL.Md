@@ -76,5 +76,5 @@ Low-quality, duplicated, misleading, auto-generated, or non-functional contribut
 ## Additional Notes
 <!-- Optional -->
 
-- [ ] I have read and accepted the DISCLAIMER and CONTRIBUTING GUIDELINES (See CONTRIBUTING GUIDELINES)
-- [ ] I am making chages that are actually useful and that they do not violate the SECURITY GUIDELINES (See SECURITY GUIDELINES)
+- [ ] I have read and accepted the DISCLAIMER and CONTRIBUTING GUIDELINES (See [CONTRIBUTING GUIDELINES](https://github.com/skiLLM-Labs/skiLLM/blob/main/CONTRIBUTING.md))
+- [ ] I am making chages that are actually useful and that they do not violate the SECURITY GUIDELINES (See [SECURITY GUIDELINES](https://github.com/skiLLM-Labs/skiLLM/blob/main/SECURITY.md))
