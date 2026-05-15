@@ -59,6 +59,30 @@
       "category": "code-quality",
       "path": "skills/code-quality/code-review-guidelines",
       "tags": ["review", "quality", "team"]
+    },
+    {
+      "name": "dom-security-hardening",
+      "category": "frontend",
+      "path": "skills/frontend/dom-security-hardening",
+      "tags": ["security", "csp"]
+    },
+    {
+      "name": "database-query-optimization",
+      "category": "backend",
+      "path": "skills/backend/database-query-optimization",
+      "tags": ["backend", "database", "performance", "sql"]
+    },
+    {
+      "name": "logging-observability-standards",
+      "category": "architecture",
+      "path": "skills/architecture/logging-observability-standards",
+      "tags": ["architecture", "observability", "logging", "backend"]
+    },
+    {
+      "name": "ci-cd-pipeline-architecture",
+      "category": "dev-tools",
+      "path": "skills/dev-tools/ci-cd-pipeline-architecture",
+      "tags": ["dev-tools", "ci-cd", "automation", "devops"]
     }
   ]
 }
