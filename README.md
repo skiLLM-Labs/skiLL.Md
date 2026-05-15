@@ -98,10 +98,4 @@ We welcome contributions from the community! However, to maintain the high quali
 
 Please read the [CONTRIBUTING.md](./CONTRIBUTING.md) before submitting a Pull Request.
 
-**Golden Rules of Contributing:**
-1. **One Skill = One Folder:** E.g., `skills/domain/my-new-skill/SKILL.md`.
-2. **Follow the Schema:** Your submission will be rejected if it does not match `schema/SKILL_SCHEMA.md`.
-3. **No Vague Advice:** "Write readable code" is not a skill. "Limit functions to 3 arguments and return a single typed object" is a skill.
-4. **Update the Registry:** Don't forget to add your new skill to `registry.json`.
-
 If you aren't sure if your skill belongs here, open a **New Skill Proposal** Issue using our issue templates!
