@@ -1,3 +1,17 @@
+import subprocess
+import sys
+
+required = ["rich", "questionary", "requests"]
+
+for package in required:
+    try:
+        __import__(package)
+    except ImportError:
+        print(f"Installing missing package: {package}")
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", package]
+        )
+        
 import os
 import time
 import requests
