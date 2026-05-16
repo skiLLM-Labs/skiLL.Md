@@ -1,6 +1,6 @@
 <div align="center">
 
-<img height="200" alt="skiLLM" src="https://github.com/user-attachments/assets/7c8a50b9-9923-4f19-8e95-e82a89ee9a2c" />
+![Project Demo](assets/logo.gif)
 
 **skiLLM is a structured, open-source collection of reusable, self-contained Markdown modules designed to teach AI coding assistants and human developers how to perform specific software engineering tasks.**
 
