@@ -1,6 +1,6 @@
 <img height="648" alt="sec guide" src="https://github.com/user-attachments/assets/406433bf-4466-40c6-8ca4-03c709195ce0" />
 
-skiLLM accepts only safe, transparent, auditable, and non-malicious skills.
+skiLL.Md accepts only safe, transparent, auditable, and non-malicious skills.
 
 Any contribution that enables abuse, malware behavior, credential theft, evasion, surveillance, destructive automation, or unsafe system access will be rejected and may result in a permanent ban from contributing.
 
