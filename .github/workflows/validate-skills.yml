@@ -38,4 +38,5 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO_NAME: ${{ github.repository }}
         run: |
+          cat scripts/validate_skills.py
           python scripts/validate_skills.py
