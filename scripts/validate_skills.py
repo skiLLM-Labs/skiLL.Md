@@ -1,11 +1,14 @@
 import os
 import re
 import sys
-import frontmatter
+import yaml
 import requests
 from pathlib import Path
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from collections import namedtuple
+
+Post = namedtuple('Post', ['metadata', 'content'])
 
 ROOT = Path(".")
 SKILLS_DIR = ROOT / "skills"
@@ -297,11 +300,34 @@ def detect_duplicates(skill_texts):
 
 
 
+def parse_frontmatter(content):
+    """Parse YAML frontmatter from markdown content."""
+    if not content.startswith('---'):
+        raise ValueError("Content does not start with ---")
+    
+    parts = content.split('---', 2)
+    if len(parts) < 3:
+        raise ValueError("Invalid frontmatter format")
+    
+    metadata_str = parts[1]
+    content_str = parts[2]
+    
+    try:
+        metadata = yaml.safe_load(metadata_str)
+    except yaml.YAMLError as e:
+        raise ValueError(f"Invalid YAML: {e}")
+    
+    if metadata is None:
+        metadata = {}
+    
+    return Post(metadata=metadata, content=content_str)
+
+
 def validate_skill_file(path):
     raw = path.read_text(encoding="utf-8")
 
     try:
-        post = frontmatter.loads(raw)
+        post = parse_frontmatter(raw)
     except Exception as e:
         fail(f"{path}: Invalid frontmatter: {e}")
         return None
