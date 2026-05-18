@@ -91,7 +91,7 @@ REQUIRED_SECTIONS = [
 
 API_KEY_PATTERNS = [
     r"ghp_[A-Za-z0-9]{36}",
-    r"AIza[0-9A-Za-z\\-_]{35}",
+    r"AIza[0-9A-Za-z\-_]{35}",  # Fixed: changed \\ to \
     r"sk-[A-Za-z0-9]{20,}",
     r"AKIA[0-9A-Z]{16}",
     r"-----BEGIN (?:RSA|DSA|EC|OPENSSH) PRIVATE KEY-----",
