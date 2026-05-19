@@ -19,17 +19,20 @@ const VALID_SKILL_TYPES: &[&str] = &[
 ];
 const VALID_SECURITY_LEVELS: &[&str] = &["safe", "review-required", "dangerous"];
 const VALID_AGENTS: &[&str] = &["claude-code", "cursor", "copilot", "codex", "gemini"];
+
 const REQUIRED_FIELDS: &[&str] = &[
     "name", "description", "version", "category", "tags", "skill_type", "author", "license",
     "compatible_agents", "estimated_context_tokens", "dangerous", "requires_review",
     "security_level", "dependencies", "triggers", "permissions", "input_requirements",
     "output_contract", "failure_conditions", "last_updated",
 ];
+
 const REQUIRED_SECTIONS: &[&str] = &[
     "## Purpose", "## When to use", "## When NOT to use", "## Inputs required", "## Workflow",
     "## Rules", "## Anti-patterns", "## Failure conditions", "## Validation checklist",
     "## Output format", "## Security considerations", "## Agent execution notes", "## Example",
 ];
+
 const REQUIRED_PR_CHECKBOXES: &[&str] = &[
     "I have read and accepted the DISCLAIMER and CONTRIBUTING GUIDELINES",
     "I am making chages that are actually useful and that they do not violate the SECURITY GUIDELINES",
@@ -68,7 +71,7 @@ lazy_static! {
         Regex::new(r"(?i)marshal\.loads").unwrap(),
         Regex::new(r"(?i)zlib\.decompress").unwrap(),
     ];
-    static ref HTML_COMMENT_REGEX: Regex = Regex::new(r"(?s)").unwrap();
+    // Fix: Properly targeting multi-line HTML comment blocks static ref HTML_COMMENT_REGEX: Regex = Regex::new(r"(?s)").unwrap();
 }
 
 struct Post {
@@ -91,11 +94,6 @@ impl Validator {
 
     fn fail(&mut self, message: String) {
         self.errors.push(message);
-    }
-
-    #[allow(dead_code)]
-    fn warn(&mut self, message: String) {
-        self.warnings.push(message);
     }
 }
 
@@ -141,7 +139,7 @@ fn extract_section(body: &str, section_name: &str) -> Option<String> {
 
 fn validate_pr_template(validator: &mut Validator, client: &Client, token: &str, repo: &str, pr: &str) {
     if token.is_empty() || repo.is_empty() || pr.is_empty() {
-        println!("INFO: Skipping PR template validation (Running locally / Missing GitHub Env Vars).");
+        println!("INFO: Skipping PR template validation (Running locally / Missing Env Vars).");
         return;
     }
 
@@ -167,8 +165,10 @@ fn validate_pr_template(validator: &mut Validator, client: &Client, token: &str,
         }
     };
 
+    // Strip HTML comments entirely
     let clean_body = HTML_COMMENT_REGEX.replace_all(&body, "").trim().to_string();
 
+    // Remove empty structural template headers to evaluate genuine user input contribution
     let body_without_headings = clean_body.replace("## Summary", "")
                                           .replace("## Type of Change", "")
                                           .replace("## What Changed", "")
@@ -180,10 +180,11 @@ fn validate_pr_template(validator: &mut Validator, client: &Client, token: &str,
                                           .replace("## Additional Notes", "");
 
     if body_without_headings.trim().len() < 20 {
-        validator.fail("PR description content is essentially empty. Please replace the default template comments with actual details.".into());
+        validator.fail("PR description body content is empty or unedited. Please fill out the template fields.".into());
         return;
     }
 
+    // Validate global required legal checkboxes
     for checkbox in REQUIRED_PR_CHECKBOXES {
         let cleaned = regex::escape(checkbox).replace("\\ ", "\\s+");
         let pattern = Regex::new(&format!(r"(?i)- \[[xX]\]\s+{}", cleaned)).unwrap();
@@ -192,18 +193,20 @@ fn validate_pr_template(validator: &mut Validator, client: &Client, token: &str,
         }
     }
 
-    let pr_sections = ["## Summary", "## Type of Change", "## What Changed"];
-
-    for section_name in pr_sections {
+    // Explicitly validate non-optional structural sections
+    let mandatory_sections = ["## Summary", "## Type of Change", "## What Changed"];
+    for section_name in mandatory_sections {
         if !body.contains(section_name) {
-            validator.fail(format!("Missing required PR section: {}", section_name));
+            validator.fail(format!("Missing required PR structural section header: {}", section_name));
             continue;
         }
 
         if let Some(content) = extract_section(&body, section_name) {
             let section_content = HTML_COMMENT_REGEX.replace_all(&content, "").trim().to_string();
-            if section_content.is_empty() || section_content.starts_with("- [ ]") || section_content.len() < 5 {
-                validator.fail(format!("The PR section '{}' has been left blank. Please provide actual details.", section_name));
+            
+            // Check if section was left completely empty, unchanged placeholder checkbox list, or exceptionally short
+            if section_content.is_empty() || section_content == "- [ ]" || section_content.len() < 5 {
+                validator.fail(format!("The required PR section '{}' has been left blank or unedited.", section_name));
             }
         }
     }
@@ -243,6 +246,11 @@ fn validate_frontmatter(validator: &mut Validator, metadata: &YamlValue, path: &
         validator.fail(format!("{}: Invalid 'version'. Must follow semver (e.g. 1.0.0).", path));
     }
 
+    let description = as_string(metadata.get("description"));
+    if description.chars().count() > 140 {
+        validator.fail(format!("{}: Description exceeds 140 characters limit.", path));
+    }
+
     let category = as_string(metadata.get("category"));
     if !category.is_empty() && !VALID_CATEGORIES.contains(&category.as_str()) {
         validator.fail(format!("{}: Invalid 'category' '{}'", path, category));
@@ -260,7 +268,7 @@ fn validate_frontmatter(validator: &mut Validator, metadata: &YamlValue, path: &
     
     let is_dangerous = as_string(metadata.get("dangerous")) == "true";
     if is_dangerous && security_level == "safe" {
-        validator.fail(format!("{}: Conflict - 'dangerous' is true, but 'security_level' is safe.", path));
+        validator.fail(format!("{}: Safety Conflict - 'dangerous' is true, but 'security_level' is safe.", path));
     }
 
     if let Some(YamlValue::Sequence(seq)) = metadata.get("compatible_agents") {
@@ -278,11 +286,11 @@ fn validate_sections(validator: &mut Validator, content: &str, path: &str) {
     for section in REQUIRED_SECTIONS {
         if let Some(index) = content.find(section) {
             if index < last_index {
-                validator.fail(format!("{}: Section order invalid near '{}'. Please follow the schema order.", path, section));
+                validator.fail(format!("{}: Section order invalid near '{}'. Follow schema order.", path, section));
             }
             last_index = index;
         } else {
-            validator.fail(format!("{}: Missing required markdown section '{}'", path, section));
+            validator.fail(format!("{}: Missing required structural markdown heading '{}'", path, section));
         }
     }
 }
@@ -290,7 +298,7 @@ fn validate_sections(validator: &mut Validator, content: &str, path: &str) {
 fn scan_patterns(validator: &mut Validator, content: &str, path: &str, patterns: &[Regex], message: &str) {
     for pattern in patterns {
         if pattern.is_match(content) {
-            validator.fail(format!("{}: {} (Matched: {})", path, message, pattern.as_str()));
+            validator.fail(format!("{}: {} (Matched pattern: {})", path, message, pattern.as_str()));
         }
     }
 }
@@ -388,7 +396,7 @@ fn validate_skill_file(validator: &mut Validator, path_str: &str, raw: &str) -> 
     validate_sections(validator, &post.content, path_str);
     
     scan_patterns(validator, raw, path_str, &API_KEY_PATTERNS, "Potential API key or secret detected");
-    scan_patterns(validator, raw, path_str, &SUSPICIOUS_PATTERNS, "Suspicious/Malicious shell command detected");
+    scan_patterns(validator, raw, path_str, &SUSPICIOUS_PATTERNS, "Suspicious connection command string detected");
     scan_patterns(validator, raw, path_str, &SUSPICIOUS_INSTRUCTIONS, "Prompt Injection / Jailbreak instruction detected");
     scan_patterns(validator, raw, path_str, &OBFUSCATION_PATTERNS, "Possible obfuscated payload detected");
 
@@ -414,7 +422,6 @@ fn main() {
     
     let mut skill_texts: HashMap<String, String> = HashMap::new();
     
-    // Dynamically look for the skills directory relative to where the binary executes
     let mut skills_dir = Path::new("skills").to_path_buf();
     if !skills_dir.exists() {
         skills_dir = Path::new("../../skills").to_path_buf();
@@ -428,7 +435,6 @@ fn main() {
         for entry in WalkDir::new(&skills_dir).into_iter().filter_map(|e| e.ok()) {
             let path = entry.path();
             if path.is_file() && path.file_name().unwrap_or_default() == "SKILL.md" {
-                // Keep file path mapping friendly to matching PR diff output strings
                 let absolute_str = path.to_string_lossy().replace("\\", "/");
                 let relative_path = if absolute_str.contains("skills/") {
                     format!("skills/{}", absolute_str.splitn(2, "skills/").collect::<Vec<&str>>()[1])
@@ -451,16 +457,12 @@ fn main() {
         }
     } else {
         println!("ERROR: 'skills' directory could not be resolved! Looked in root, ../, and ../../");
-        validator.fail("Repository skills directory directory was completely missing or unreadable.".into());
+        validator.fail("Repository skills directory was completely missing or unreadable.".into());
     }
 
     detect_duplicates(&mut validator, &skill_texts);
 
     println!("\n================ VALIDATION REPORT ================\n");
-
-    for warning in &validator.warnings {
-        println!("WARNING: {}", warning);
-    }
 
     if !validator.errors.is_empty() {
         for error in &validator.errors {
