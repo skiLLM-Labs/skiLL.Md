@@ -169,8 +169,6 @@ fn validate_pr_template(validator: &mut Validator, client: &Client, token: &str,
 
     let clean_body = HTML_COMMENT_REGEX.replace_all(&body, "").trim().to_string();
 
-    // If all they did was open the PR without typing anything, the length of the headings alone is ~150 chars.
-    // If we remove all boilerplate headings, is there anything left?
     let body_without_headings = clean_body.replace("## Summary", "")
                                           .replace("## Type of Change", "")
                                           .replace("## What Changed", "")
@@ -204,7 +202,6 @@ fn validate_pr_template(validator: &mut Validator, client: &Client, token: &str,
 
         if let Some(content) = extract_section(&body, section_name) {
             let section_content = HTML_COMMENT_REGEX.replace_all(&content, "").trim().to_string();
-            // A common failure point: user leaves "- [ ]" or "Closes #..." blank text
             if section_content.is_empty() || section_content.starts_with("- [ ]") || section_content.len() < 5 {
                 validator.fail(format!("The PR section '{}' has been left blank. Please provide actual details.", section_name));
             }
@@ -264,6 +261,15 @@ fn validate_frontmatter(validator: &mut Validator, metadata: &YamlValue, path: &
     let is_dangerous = as_string(metadata.get("dangerous")) == "true";
     if is_dangerous && security_level == "safe" {
         validator.fail(format!("{}: Conflict - 'dangerous' is true, but 'security_level' is safe.", path));
+    }
+
+    if let Some(YamlValue::Sequence(seq)) = metadata.get("compatible_agents") {
+        for agent_val in seq {
+            let agent = as_string(Some(agent_val));
+            if !VALID_AGENTS.contains(&agent.as_str()) {
+                validator.fail(format!("{}: Invalid compatible agent '{}' in frontmatter", path, agent));
+            }
+        }
     }
 }
 
@@ -407,16 +413,29 @@ fn main() {
     let changed_files = get_pr_changed_files(&client, &github_token, &repo_name, &pr_number);
     
     let mut skill_texts: HashMap<String, String> = HashMap::new();
-    let skills_dir = Path::new("skills");
+    
+    // Dynamically look for the skills directory relative to where the binary executes
+    let mut skills_dir = Path::new("skills").to_path_buf();
+    if !skills_dir.exists() {
+        skills_dir = Path::new("../../skills").to_path_buf();
+    }
+    if !skills_dir.exists() {
+        skills_dir = Path::new("../skills").to_path_buf();
+    }
 
     if skills_dir.exists() {
-        for entry in WalkDir::new(skills_dir).into_iter().filter_map(|e| e.ok()) {
+        println!("INFO: Found 'skills' directory at: {:?}", skills_dir);
+        for entry in WalkDir::new(&skills_dir).into_iter().filter_map(|e| e.ok()) {
             let path = entry.path();
             if path.is_file() && path.file_name().unwrap_or_default() == "SKILL.md" {
-                // Normalize path slashes so it matches GitHub's API response regardless of OS
-                let relative_path = path.to_string_lossy().replace("\\", "/");
+                // Keep file path mapping friendly to matching PR diff output strings
+                let absolute_str = path.to_string_lossy().replace("\\", "/");
+                let relative_path = if absolute_str.contains("skills/") {
+                    format!("skills/{}", absolute_str.splitn(2, "skills/").collect::<Vec<&str>>()[1])
+                } else {
+                    absolute_str
+                };
                 
-                // Only validate if it's in the PR diff, OR if we are running locally (changed_files is empty)
                 let is_changed = changed_files.is_empty() || changed_files.iter().any(|f| relative_path.ends_with(f) || f.ends_with(&relative_path));
 
                 if let Ok(raw) = fs::read_to_string(path) {
@@ -431,7 +450,8 @@ fn main() {
             }
         }
     } else {
-        println!("INFO: 'skills' directory not found. Skipping file validation.");
+        println!("ERROR: 'skills' directory could not be resolved! Looked in root, ../, and ../../");
+        validator.fail("Repository skills directory directory was completely missing or unreadable.".into());
     }
 
     detect_duplicates(&mut validator, &skill_texts);
