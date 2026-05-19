@@ -16,9 +16,6 @@ jobs:
     steps:      
       - name: Checkout        
         uses: actions/checkout@v4
-        with:
-          # Force the runner to pull your exact PR branch commit instead of the virtual merge
-          ref: ${{ github.event.pull_request.head.sha }}
           
       - name: Setup Rust        
         uses: dtolnay/rust-toolchain@stable
