@@ -1,4 +1,3 @@
-use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest::blocking::Client;
 use reqwest::header::{ACCEPT, AUTHORIZATION, USER_AGENT};
@@ -9,6 +8,7 @@ use std::env;
 use std::fs;
 use std::path::Path;
 use std::process;
+use std::sync::LazyLock;
 use walkdir::WalkDir;
 
 const VALID_CATEGORIES: &[&str] = &[
@@ -38,41 +38,45 @@ const REQUIRED_PR_CHECKBOXES: &[&str] = &[
     "I am making chages that are actually useful and that they do not violate the SECURITY GUIDELINES",
 ];
 
-lazy_static! {
-    static ref API_KEY_PATTERNS: Vec<Regex> = vec![
-        Regex::new(r"(?i)ghp_[A-Za-z0-9]{36}").unwrap(),
-        Regex::new(r"(?i)AIza[0-9A-Za-z\-_]{35}").unwrap(),
-        Regex::new(r"(?i)sk-[A-Za-z0-9]{20,}").unwrap(),
-        Regex::new(r"(?i)AKIA[0-9A-Z]{16}").unwrap(),
-        Regex::new(r"(?i)-----BEGIN (?:RSA|DSA|EC|OPENSSH) PRIVATE KEY-----").unwrap(),
-        Regex::new(r"(?i)xox[baprs]-[A-Za-z0-9-]+").unwrap(),
-    ];
-    static ref SUSPICIOUS_PATTERNS: Vec<Regex> = vec![
-        Regex::new(r"(?i)curl.+\|.+bash").unwrap(),
-        Regex::new(r"(?i)wget.+\|.+sh").unwrap(),
-        Regex::new(r"(?i)curl\s+.*http.*\.sh").unwrap(),
-        Regex::new(r"(?i)wget\s+.*http.*\.sh").unwrap(),
-        Regex::new(r"(?i)curl\s+.*http.*\.exe").unwrap(),
-        Regex::new(r"(?i)powershell.+iex").unwrap(),
-        Regex::new(r"(?i)Invoke-Expression").unwrap(),
-        Regex::new(r"(?i)base64\s+-d").unwrap(),
-        Regex::new(r"(?i)sh\s+-c\s+.*http").unwrap(),
-        Regex::new(r"(?i)rm\s+-rf\s+/").unwrap(),
-    ];
-    static ref SUSPICIOUS_INSTRUCTIONS: Vec<Regex> = vec![
-        Regex::new(r"(?i)ignore (all )?previous instructions").unwrap(),
-        Regex::new(r"(?i)you are now (an? )?(unrestricted|jailbroken|unfiltered)").unwrap(),
-        Regex::new(r"(?i)disregard (the )?system prompt").unwrap(),
-        Regex::new(r"(?i)bypass security").unwrap(),
-        Regex::new(r"(?i)forget (all )?rules").unwrap(),
-    ];
-    static ref OBFUSCATION_PATTERNS: Vec<Regex> = vec![
-        Regex::new(r"(?i)[A-Za-z0-9+/]{200,}={0,2}").unwrap(),
-        Regex::new(r"(?i)marshal\.loads").unwrap(),
-        Regex::new(r"(?i)zlib\.decompress").unwrap(),
-    ];
-    // Fix: Properly targeting multi-line HTML comment blocks static ref HTML_COMMENT_REGEX: Regex = Regex::new(r"(?s)").unwrap();
-}
+static API_KEY_PATTERNS: LazyLock<Vec<Regex>> = LazyLock::new(|| vec![
+    Regex::new(r"(?i)ghp_[A-Za-z0-9]{36}").unwrap(),
+    Regex::new(r"(?i)AIza[0-9A-Za-z\-_]{35}").unwrap(),
+    Regex::new(r"(?i)sk-[A-Za-z0-9]{20,}").unwrap(),
+    Regex::new(r"(?i)AKIA[0-9A-Z]{16}").unwrap(),
+    Regex::new(r"(?i)-----BEGIN (?:RSA|DSA|EC|OPENSSH) PRIVATE KEY-----").unwrap(),
+    Regex::new(r"(?i)xox[baprs]-[A-Za-z0-9-]+").unwrap(),
+]);
+
+static SUSPICIOUS_PATTERNS: LazyLock<Vec<Regex>> = LazyLock::new(|| vec![
+    Regex::new(r"(?i)curl.+\|.+bash").unwrap(),
+    Regex::new(r"(?i)wget.+\|.+sh").unwrap(),
+    Regex::new(r"(?i)curl\s+.*http.*\.sh").unwrap(),
+    Regex::new(r"(?i)wget\s+.*http.*\.sh").unwrap(),
+    Regex::new(r"(?i)curl\s+.*http.*\.exe").unwrap(),
+    Regex::new(r"(?i)powershell.+iex").unwrap(),
+    Regex::new(r"(?i)Invoke-Expression").unwrap(),
+    Regex::new(r"(?i)base64\s+-d").unwrap(),
+    Regex::new(r"(?i)sh\s+-c\s+.*http").unwrap(),
+    Regex::new(r"(?i)rm\s+-rf\s+/").unwrap(),
+]);
+
+static SUSPICIOUS_INSTRUCTIONS: LazyLock<Vec<Regex>> = LazyLock::new(|| vec![
+    Regex::new(r"(?i)ignore (all )?previous instructions").unwrap(),
+    Regex::new(r"(?i)you are now (an? )?(unrestricted|jailbroken|unfiltered)").unwrap(),
+    Regex::new(r"(?i)disregard (the )?system prompt").unwrap(),
+    Regex::new(r"(?i)bypass security").unwrap(),
+    Regex::new(r"(?i)forget (all )?rules").unwrap(),
+]);
+
+static OBFUSCATION_PATTERNS: LazyLock<Vec<Regex>> = LazyLock::new(|| vec![
+    Regex::new(r"(?i)[A-Za-z0-9+/]{200,}={0,2}").unwrap(),
+    Regex::new(r"(?i)marshal\.loads").unwrap(),
+    Regex::new(r"(?i)zlib\.decompress").unwrap(),
+]);
+
+static HTML_COMMENT_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?s)").unwrap()
+});
 
 struct Post {
     metadata: YamlValue,
@@ -457,7 +461,7 @@ fn main() {
         }
     } else {
         println!("ERROR: 'skills' directory could not be resolved! Looked in root, ../, and ../../");
-        validator.fail("Repository skills directory was completely missing or unreadable.".into());
+        validator.fail("Repository skills directory directory was completely missing or unreadable.".into());
     }
 
     detect_duplicates(&mut validator, &skill_texts);
